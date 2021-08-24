@@ -393,7 +393,8 @@ classification_report(y_test,pred)
 # from sklearn.linear_model import LinearRegression
 
 #%%
-dataset4 = pd.read_csv('Dataset/Dataset_04.csv')
+dataset4 = pd.read_csv('C:/Users/SEC/OneDrive/바탕 화면/Dataset/Dataset_04.csv')
+
 # =============================================================================
 # 1.한국인의 1인당 육류 소비량이 해가 갈수록 증가하는 것으로 보여 상관분석을 통하여
 # 확인하려고 한다. 
@@ -492,8 +493,19 @@ print(mape)
 
 # 5.78
 
-
-
+q3_out=[]
+sublist=q3.SUBJECT.unique()
+for i in sublist:
+    temp = q3[q3.SUBJECT == i]
+    # 2차원으로 들어가도록 설계
+    globals()['lm_'+str(i)] = LinearRegression().fit(temp[['TIME']],temp.KOR)
+    r2_score = eval('lm_'+str(i)).score(temp[['TIME']],temp.KOR)
+    q3_out=q3_out+[[i,r2_score]]
+    
+lm_PIG.coef_
+q3_out=pd.DataFrame(q3_out,columns=['sub','r2_score'])
+temp=q3[q3.SUBJECT == 'POULTRY']
+lm_POULTRY.predict(temp[['TIME']])
 #%%
 
 # =============================================================================
@@ -539,15 +551,20 @@ print(mape)
 
 
 #%%
-
+import pandas as pd
+dataset5 = pd.read_csv('C:/Users/SEC/OneDrive/바탕 화면/Dataset/Dataset_05.csv',
+                       na_values=['NA','?',""," "])
+dataset5.columns
+dataset5.dtypes
+dataset5.info()
 # =============================================================================
 # 1.위의 표에 표시된 데이터 타입에 맞도록 전처리를 수행하였을 때, 데이터 파일 내에
 # 존재하는 결측값은 모두 몇 개인가? 숫자형 데이터와 문자열 데이터의 결측값을
 # 모두 더하여 답하시오.
 # (String 타입 변수의 경우 White Space(Blank)를 결측으로 처리한다) (답안 예시) 123
 # =============================================================================
-
-
+dataset5.isna().sum().sum()
+# 1166
 
 
 
@@ -561,10 +578,16 @@ print(mape)
 # (답안 예시) 0.2345, N
 # =============================================================================
 
+q2 = dataset5.dropna()
+len(q2)
+len(dataset5)
 
+q2_tab = pd.crosstab(index=q2.Gender,columns=q2.Segmentation)
 
+from scipy.stats import chi2_contingency
 
-
+chi2_contingency(q2_tab)[1]
+# 0.0031, Y
 #%%
 
 # =============================================================================
@@ -584,6 +607,38 @@ print(mape)
 # 기술하시오.
 # (답안 예시) 0.12
 # =============================================================================
+
+q3 = q2[q2.Segmentation.isin(['A','D'])]
+
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+
+train,test = train_test_split(q3,test_size=0.3
+                              ,random_state=123)
+
+x_var = ['Age_gr','Gender', 'Work_Experience',
+         'Family_Size','Ever_Married', 
+         'Graduated', 'Spending_Score']
+
+dt = DecisionTreeClassifier(max_depth=7,random_state=123)
+
+dt.fit(train[x_var],train.Segmentation)
+
+pred = dt.fit(test[x_var])
+
+dt.score(test[x_var],test.Segmentation)
+
+# 0.68
+
+
+
+
+
+
+
+
+
+
 
 
 
